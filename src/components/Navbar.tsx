@@ -1,189 +1,135 @@
 import React from 'react';
+// Hook customizado com os estados globais de navegação e gamificação
 import { useDualDev } from '../context/DualDevContext';
+// Catálogo das 5 linguagens de programação suportadas
 import { tracks } from '../data/tracks';
 import { LanguageIcon } from './LanguageIcon';
+// Ícones do Lucide para identificação visual rápida de cada seção
 import { 
   Code2, 
   BookOpen, 
-  Flame, 
   Zap, 
   Trophy, 
   Info, 
   Terminal, 
-  Compass, 
-  Sun,
-  Moon
+  Compass 
 } from 'lucide-react';
 
+/**
+ * Navbar: Barra de navegação superior permanente no modo escuro com acentos pastéis.
+ * Modificações solicitadas:
+ * - Botão de modo claro completamente removido.
+ * - Cores suavizadas para tons pastéis estéticos: Pêssego Pastel (#ffbe82) e Azul Celeste Pastel (#9FD6F2).
+ * - Indicador de XP limpo e elegante.
+ */
 export const Navbar: React.FC = () => {
   const { 
     activeTab, 
     setActiveTab, 
     userXp, 
     userLevel, 
-    streak, 
     currentTrackId, 
     setCurrentTrackId,
-    theme,
-    toggleTheme,
   } = useDualDev();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-purple-200/70 dark:border-purple-950/60 bg-white/90 dark:bg-[#0c0814]/90 backdrop-blur-md transition-colors duration-200">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#0e1626]/90 backdrop-blur-md shadow-sm transition-colors">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
         
-        {/* Logo & Platform Brand */}
-        <div className="flex items-center gap-6">
+        {/* Logotipo e Identidade DualDev */}
+        <div className="flex items-center gap-7">
           <button 
             onClick={() => setActiveTab('inicio')}
             className="group flex items-center gap-2.5 text-left focus:outline-none"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-500/25 group-hover:scale-105 transition-transform">
-              <Code2 className="h-5 w-5 font-bold stroke-[2.5]" />
+            {/* Ícone com gradiente pastel suave entre Pêssego (#ffbe82) e Cerúleo (#6fb7db) */}
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#ffbe82] to-[#6fb7db] text-slate-950 shadow-xs group-hover:opacity-95 transition-opacity">
+              <Code2 className="h-4 w-4 stroke-[2.3]" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5 font-extrabold tracking-tight text-slate-900 dark:text-white text-base">
-                <span>Dual</span>
-                <span className="text-purple-600 dark:text-purple-400">Dev</span>
-                <span className="text-[10px] font-mono uppercase tracking-widest text-purple-700 dark:text-purple-300 px-1 py-0.5 rounded bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800/60">
-                  Academia
-                </span>
-              </div>
+
+            <div className="flex items-center gap-2">
+              <span className="font-bold tracking-tight text-white text-base">
+                Dual<span className="text-[#ffbe82]">Dev</span>
+              </span>
+              <span className="text-[10px] font-semibold tracking-wider text-[#9FD6F2] px-2 py-0.5 rounded-md bg-[#9FD6F2]/10 border border-[#9FD6F2]/25">
+                Academy
+              </span>
             </div>
           </button>
 
-          {/* Main Navigation Links */}
+          {/* Links de Navegação Principal */}
           <nav className="hidden md:flex items-center gap-1">
-            <button
-              onClick={() => setActiveTab('inicio')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'inicio'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <Compass className="h-4 w-4" />
-              Início
-            </button>
-
-            <button
-              onClick={() => setActiveTab('academia')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'academia'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <BookOpen className="h-4 w-4" />
-              Academia
-            </button>
-
-            <button
-              onClick={() => setActiveTab('playground')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'playground'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <Terminal className="h-4 w-4" />
-              Playground
-            </button>
-
-            <button
-              onClick={() => setActiveTab('conquistas')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'conquistas'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <Trophy className="h-4 w-4" />
-              Conquistas
-            </button>
-
-            <button
-              onClick={() => setActiveTab('sobre')}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'sobre'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-50 dark:hover:bg-purple-950/40'
-              }`}
-            >
-              <Info className="h-4 w-4" />
-              Sobre
-            </button>
+            {[
+              { id: 'inicio', label: 'Início', icon: Compass },
+              { id: 'academia', label: 'Academia', icon: BookOpen },
+              { id: 'playground', label: 'Playground', icon: Terminal },
+              { id: 'conquistas', label: 'Conquistas', icon: Trophy },
+              { id: 'sobre', label: 'Sobre', icon: Info },
+            ].map(({ id, label, icon: Icon }) => {
+              const isActive = activeTab === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setActiveTab(id as any)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    isActive
+                      ? 'bg-[#1a2638] text-white border border-[#9FD6F2]/30 shadow-xs'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
           </nav>
         </div>
 
-        {/* Controls, Theme Switcher & Stats */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
+        {/* Controles de Linguagem e Indicador de XP */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
           
-          {/* Quick Track Switcher Dropdown */}
+          {/* Seletor Rápido de Linguagem */}
           <div className="relative flex items-center">
             <div className="absolute left-2.5 pointer-events-none">
-              <LanguageIcon trackId={currentTrackId} className="w-4 h-4" />
+              <LanguageIcon trackId={currentTrackId} className="w-3.5 h-3.5" />
             </div>
             <select
               value={currentTrackId}
               onChange={(e) => setCurrentTrackId(e.target.value as any)}
-              className="appearance-none bg-purple-50/50 dark:bg-[#140e24] border border-purple-200 dark:border-purple-900/50 hover:border-purple-400 dark:hover:border-purple-700 text-slate-800 dark:text-purple-100 text-xs font-mono font-medium py-1.5 pl-8 pr-7 rounded-lg cursor-pointer focus:outline-none focus:ring-1 focus:ring-purple-500 transition-colors"
+              className="appearance-none bg-[#131d2e] border border-slate-700/80 hover:border-slate-600 text-slate-200 text-xs font-medium py-1.5 pl-8 pr-6 rounded-md cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#ffbe82]/40 transition-all"
             >
               {tracks.map((t) => (
-                <option key={t.id} value={t.id}>
+                <option key={t.id} value={t.id} className="bg-[#0e1626]">
                   {t.name}
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-purple-400 text-[10px]">
+            <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[9px]">
               ▼
             </div>
           </div>
 
-          {/* Theme Toggle (Dark / Light) */}
-          <button
-            onClick={toggleTheme}
-            title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro (padrão)'}
-            aria-label="Alternar tema"
-            className="flex items-center justify-center h-8 w-8 rounded-lg border border-purple-200 dark:border-purple-900/50 bg-purple-50/50 dark:bg-[#140e24] text-slate-700 dark:text-purple-300 hover:border-purple-400 dark:hover:border-purple-600 hover:bg-purple-100/60 dark:hover:bg-purple-900/40 transition-colors"
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4 text-amber-300 hover:rotate-45 transition-transform" />
-            ) : (
-              <Moon className="h-4 w-4 text-purple-700 hover:-rotate-12 transition-transform" />
-            )}
-          </button>
-
-          {/* Streak Counter */}
-          <div 
-            title={`${streak} dias consecutivos de prática`}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-700 dark:text-purple-300 text-xs font-medium"
-          >
-            <Flame className="h-3.5 w-3.5 fill-purple-500 text-purple-500" />
-            <span className="font-mono font-bold">{streak}d</span>
-          </div>
-
-          {/* XP & Level Badge */}
+          {/* Indicador de XP e Nível */}
           <div 
             title={`Nível ${userLevel} • ${userXp} Pontos de Experiência`}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-xs font-medium"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#131d2e] border border-[#ffbe82]/30 text-slate-200 text-xs font-medium"
           >
-            <Zap className="h-3.5 w-3.5 fill-indigo-500 text-indigo-500" />
-            <span className="font-mono font-bold">{userXp} XP</span>
-            <span className="text-purple-300/40 dark:text-purple-800">|</span>
-            <span className="font-mono">Nv. {userLevel}</span>
+            <Zap className="h-3.5 w-3.5 fill-[#ffbe82] text-[#ffbe82]" />
+            <span className="font-mono font-semibold text-white">{userXp} XP</span>
+            <span className="text-slate-600">|</span>
+            <span className="font-mono font-semibold text-slate-400">Nv. {userLevel}</span>
           </div>
 
         </div>
 
       </div>
 
-      {/* Mobile subnavigation bar */}
-      <div className="md:hidden flex items-center justify-around border-t border-purple-200/70 dark:border-purple-950/60 bg-white dark:bg-[#0c0814] px-2 py-1.5 transition-colors">
+      {/* Sub-barra móvel para telas menores */}
+      <div className="md:hidden flex items-center justify-around border-t border-slate-800 bg-[#0e1626] px-2 py-1.5 transition-colors">
         <button
           onClick={() => setActiveTab('inicio')}
           className={`flex flex-col items-center py-1 text-[11px] ${
-            activeTab === 'inicio' ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+            activeTab === 'inicio' ? 'text-[#ffbe82] font-semibold' : 'text-slate-400'
           }`}
         >
           <Compass className="h-4 w-4 mb-0.5" />
@@ -192,7 +138,7 @@ export const Navbar: React.FC = () => {
         <button
           onClick={() => setActiveTab('academia')}
           className={`flex flex-col items-center py-1 text-[11px] ${
-            activeTab === 'academia' ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+            activeTab === 'academia' ? 'text-[#ffbe82] font-semibold' : 'text-slate-400'
           }`}
         >
           <BookOpen className="h-4 w-4 mb-0.5" />
@@ -201,7 +147,7 @@ export const Navbar: React.FC = () => {
         <button
           onClick={() => setActiveTab('playground')}
           className={`flex flex-col items-center py-1 text-[11px] ${
-            activeTab === 'playground' ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+            activeTab === 'playground' ? 'text-[#ffbe82] font-semibold' : 'text-slate-400'
           }`}
         >
           <Terminal className="h-4 w-4 mb-0.5" />
@@ -210,7 +156,7 @@ export const Navbar: React.FC = () => {
         <button
           onClick={() => setActiveTab('conquistas')}
           className={`flex flex-col items-center py-1 text-[11px] ${
-            activeTab === 'conquistas' ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+            activeTab === 'conquistas' ? 'text-[#ffbe82] font-semibold' : 'text-slate-400'
           }`}
         >
           <Trophy className="h-4 w-4 mb-0.5" />
@@ -219,7 +165,7 @@ export const Navbar: React.FC = () => {
         <button
           onClick={() => setActiveTab('sobre')}
           className={`flex flex-col items-center py-1 text-[11px] ${
-            activeTab === 'sobre' ? 'text-purple-600 dark:text-purple-400 font-bold' : 'text-slate-500 dark:text-slate-400'
+            activeTab === 'sobre' ? 'text-[#ffbe82] font-semibold' : 'text-slate-400'
           }`}
         >
           <Info className="h-4 w-4 mb-0.5" />

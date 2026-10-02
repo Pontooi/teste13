@@ -1,4 +1,5 @@
 import React from 'react';
+// Ícones do Lucide para terminal, checks de teste, erros e botão de limpar
 import { 
   Terminal, 
   CheckCircle2, 
@@ -7,8 +8,12 @@ import {
   Clock, 
   AlertCircle
 } from 'lucide-react';
+// Tipos com a estrutura de retorno da execução do runner e dos testes unitários
 import { ExecutionResult, TestResult } from '../types';
 
+/**
+ * Propriedades recebidas pelo componente ConsoleOutput
+ */
 interface ConsoleOutputProps {
   result: ExecutionResult | null;
   testResults: TestResult[];
@@ -17,6 +22,13 @@ interface ConsoleOutputProps {
   setActiveSubTab: (tab: 'output' | 'tests') => void;
 }
 
+/**
+ * ConsoleOutput: Terminal com estética Dark Pastel.
+ * Cores Pastéis:
+ * - Saída stdout com tipografia nítida e realce em Celeste Pastel (#9FD6F2)
+ * - Erros em Rosa Pastel suave (#fca5a5) com fundo em tom de rubi discreto
+ * - Testes aprovados em Menta Pastel (#86efac)
+ */
 export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({
   result,
   testResults,
@@ -29,48 +41,48 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({
   const allTestsPassed = hasTests && passedTestsCount === testResults.length;
 
   return (
-    <div className="flex flex-col h-full rounded-xl border border-purple-200/80 dark:border-purple-950/70 bg-white dark:bg-[#120c22] shadow-xl overflow-hidden transition-colors">
+    <div className="aero-card flex flex-col h-full overflow-hidden bg-[#070d16]">
       
-      {/* Console Tab Header */}
-      <div className="flex items-center justify-between border-b border-purple-200/80 dark:border-purple-950/70 bg-slate-50 dark:bg-[#0f0a1c] px-4 py-2 transition-colors">
-        <div className="flex items-center gap-2">
-          
+      {/* Cabeçalho do Console (Abas de Terminal, Testes e Botão de Limpar) */}
+      <div className="flex items-center justify-between border-b border-slate-800/80 bg-[#0e1626] px-3 py-1.5">
+        
+        {/* Abas Alternáveis */}
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveSubTab('output')}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors ${
               activeSubTab === 'output'
-                ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-purple-200'
+                ? 'bg-[#1a2638] text-white shadow-xs border border-[#9FD6F2]/30'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Terminal className="h-3.5 w-3.5" />
+            <Terminal className="h-3 w-3 text-[#9FD6F2]" />
             <span>Terminal</span>
           </button>
 
           {hasTests && (
             <button
               onClick={() => setActiveSubTab('tests')}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium transition-colors ${
                 activeSubTab === 'tests'
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 font-semibold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-purple-200'
+                  ? 'bg-[#1a2638] text-white shadow-xs border border-[#9FD6F2]/30'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               {allTestsPassed ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <CheckCircle2 className="h-3 w-3 text-[#86efac]" />
               ) : (
-                <AlertCircle className="h-3.5 w-3.5 text-purple-500" />
+                <AlertCircle className="h-3 w-3 text-[#ffbe82]" />
               )}
               <span>Testes ({passedTestsCount}/{testResults.length})</span>
             </button>
           )}
-
         </div>
 
-        {/* Clear and Status */}
-        <div className="flex items-center gap-3">
+        {/* Duração em milissegundos e Botão de Limpar */}
+        <div className="flex items-center gap-2">
           {result && (
-            <div className="flex items-center gap-1 text-[11px] font-mono text-purple-500/70 dark:text-purple-400/60">
+            <div className="flex items-center gap-1 text-[11px] font-mono text-slate-400">
               <Clock className="h-3 w-3" />
               <span>{result.executionTimeMs}ms</span>
             </div>
@@ -79,48 +91,51 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({
           <button
             onClick={onClear}
             title="Limpar console"
-            className="text-slate-500 hover:text-slate-800 dark:text-purple-400/60 dark:hover:text-purple-200 p-1 rounded hover:bg-purple-100/50 dark:hover:bg-purple-950/60 transition-colors"
+            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-slate-800 transition-colors"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            <Trash2 className="h-3 w-3" />
           </button>
         </div>
       </div>
 
-      {/* Output Content (High Contrast Terminal Dark Surface) */}
-      <div className="flex-1 overflow-y-auto p-4 font-mono text-xs leading-relaxed bg-[#0a0714] text-purple-100">
+      {/* Superfície do Console */}
+      <div className="flex-1 overflow-y-auto p-3.5 font-mono text-xs leading-relaxed bg-[#070d16] text-slate-200">
+        
+        {/* Visualização da Aba Terminal */}
         {activeSubTab === 'output' && (
           <div>
             {!result ? (
-              <div className="flex flex-col items-center justify-center h-48 text-purple-400/40 text-center">
-                <Terminal className="h-8 w-8 mb-2 stroke-1 opacity-40" />
+              <div className="flex flex-col items-center justify-center h-44 text-slate-600 text-center">
+                <Terminal className="h-6 w-6 mb-2 opacity-40 text-slate-500" />
                 <p>Nenhuma saída gerada ainda.</p>
-                <p className="text-[11px] text-purple-400/30 mt-1">
+                <p className="text-[11px] text-slate-600 mt-0.5">
                   Clique em "Executar" para compilar e rodar o código.
                 </p>
               </div>
             ) : (
               <div className="space-y-2">
                 {result.stdout && (
-                  <pre className="text-emerald-400 whitespace-pre-wrap selection:bg-emerald-950/80">
+                  <pre className="text-[#9FD6F2] whitespace-pre-wrap font-medium">
                     {result.stdout}
                   </pre>
                 )}
 
+                {/* Bloco de Erro em Rosa Pastel */}
                 {result.stderr && (
-                  <div className="rounded-lg border border-red-500/30 bg-red-950/40 p-3 text-red-300">
-                    <div className="flex items-center gap-2 font-bold mb-1 text-red-400">
-                      <XCircle className="h-4 w-4" />
+                  <div className="rounded-md border border-rose-900/50 bg-rose-950/25 p-3 text-[#fca5a5]">
+                    <div className="flex items-center gap-1.5 font-semibold mb-1 text-rose-400">
+                      <XCircle className="h-3.5 w-3.5" />
                       <span>Erro de Execução</span>
                     </div>
-                    <pre className="whitespace-pre-wrap font-mono text-xs">
+                    <pre className="whitespace-pre-wrap font-mono text-xs text-[#fca5a5]">
                       {result.stderr}
                     </pre>
                   </div>
                 )}
 
                 {!result.stdout && !result.stderr && (
-                  <p className="text-purple-400/40 italic">
-                    Programa finalizou com código 0 (sem saída de texto).
+                  <p className="text-slate-500 italic">
+                    Código finalizou com sucesso (sem mensagens impressas).
                   </p>
                 )}
               </div>
@@ -128,16 +143,14 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({
           </div>
         )}
 
+        {/* Visualização da Aba de Testes Automatizados */}
         {activeSubTab === 'tests' && (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {allTestsPassed && (
-              <div className="flex items-center gap-2.5 p-3 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-emerald-300">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                <div>
-                  <div className="font-bold text-emerald-200">Parabéns! Todos os testes foram aprovados!</div>
-                  <div className="text-[11px] text-emerald-400/80">
-                    Você dominou este conceito e garantiu seus pontos de experiência (XP).
-                  </div>
+              <div className="flex items-center gap-2 p-2.5 rounded-md bg-emerald-950/30 border border-emerald-800/60 text-[#86efac]">
+                <CheckCircle2 className="h-4 w-4 text-[#86efac] shrink-0" />
+                <div className="text-xs font-medium">
+                  Parabéns! Todos os testes foram aprovados com sucesso.
                 </div>
               </div>
             )}
@@ -145,32 +158,28 @@ export const ConsoleOutput: React.FC<ConsoleOutputProps> = ({
             {testResults.map((t, idx) => (
               <div
                 key={t.testId || idx}
-                className={`p-3 rounded-lg border transition-all ${
-                  t.passed
-                    ? 'bg-[#120e20] border-emerald-500/30 text-purple-100'
-                    : 'bg-[#120e20] border-red-500/30 text-purple-200'
-                }`}
+                className="p-2.5 rounded-md border border-slate-800 bg-[#0c1422] space-y-1"
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2 font-semibold">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-medium text-xs">
                     {t.passed ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-[#86efac] shrink-0" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-400 shrink-0" />
+                      <XCircle className="h-3.5 w-3.5 text-[#fca5a5] shrink-0" />
                     )}
-                    <span>{t.description}</span>
+                    <span className="text-slate-200">{t.description}</span>
                   </div>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
+                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-semibold ${
                       t.passed
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/30'
+                        ? 'bg-emerald-500/15 text-[#86efac]'
+                        : 'bg-rose-500/15 text-[#fca5a5]'
                     }`}
                   >
                     {t.passed ? 'PASSOU' : 'FALHOU'}
                   </span>
                 </div>
-                <p className="text-[11px] text-purple-300/60 pl-6">{t.message}</p>
+                <p className="text-[11px] text-slate-400 pl-5">{t.message}</p>
               </div>
             ))}
           </div>

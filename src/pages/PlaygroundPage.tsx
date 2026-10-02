@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
+// Tipos para identificar a linguagem selecionada e o resultado do runner
 import { TrackId, ExecutionResult } from '../types';
+// Serviço que compila e interpreta códigos localmente no navegador
 import { executeCode } from '../services/runners';
+// Componentes do editor e saída de console
 import { CodeEditor } from '../components/CodeEditor';
 import { ConsoleOutput } from '../components/ConsoleOutput';
 import { LanguageIcon } from '../components/LanguageIcon';
 import { useDualDev } from '../context/DualDevContext';
 import { Terminal } from 'lucide-react';
 
+/**
+ * Modelos de código pré-configurados para o usuário testar rapidamente no Playground
+ */
 const PRESETS: Record<TrackId, { name: string; code: string }[]> = {
   java: [
     {
@@ -62,52 +68,92 @@ const PRESETS: Record<TrackId, { name: string; code: string }[]> = {
   ],
   python: [
     {
-      name: 'Script Básico Python',
-      code: `# Playground Python
-linguagens = ["Python", "Java", "TypeScript", "Rust"]
+      name: 'Entrada, Saída e Condicionais',
+      code: `# Playground Python no DualDev
+nome = "Explorador"
+pontos = 250
 
-print("Linguagens suportadas:")
-for idx, lang in enumerate(linguagens, 1):
-    print(f"{idx}. {lang}")`,
+print(f"Olá, {nome}! Bem-vindo ao DualDev.")
+
+if pontos >= 200:
+    print("Classificação: Desenvolvedor Ouro!")
+elif pontos >= 100:
+    print("Classificação: Desenvolvedor Prata!")
+else:
+    print("Classificação: Iniciante.")
+`,
+    },
+    {
+      name: 'Funções e Listas',
+      code: `def analisar_notas(notas):
+    media = sum(notas) / len(notas)
+    maior = max(notas)
+    menor = min(notas)
+    return media, maior, menor
+
+notas_aluno = [8.5, 9.0, 7.5, 10.0, 9.5]
+media, maior, menor = analisar_notas(notas_aluno)
+
+print("Notas:", notas_aluno)
+print(f"Média: {media:.2f}")
+print(f"Maior Nota: {maior}")
+print(f"Menor Nota: {menor}")
+`,
     },
   ],
   javascript: [
     {
-      name: 'Modern JS ES6+',
-      code: `// Playground JavaScript
-const devs = [
-  { name: 'Ana', xp: 450 },
-  { name: 'Lucas', xp: 620 },
-  { name: 'Carla', xp: 810 }
+      name: 'ES6 Moderno & Arrays',
+      code: `// Recursos modernos do JavaScript ES6+
+const tecnologias = [
+  { nome: 'Java', tipo: 'Backend', ano: 1995 },
+  { nome: 'Python', tipo: 'IA & Scripts', ano: 1991 },
+  { nome: 'JavaScript', tipo: 'Web Fullstack', ano: 1995 },
 ];
 
-const totalXp = devs.reduce((acc, dev) => acc + dev.xp, 0);
-console.log('Total XP da Equipe:', totalXp);
-console.log('Devs ordenados:', devs.sort((a, b) => b.xp - a.xp));`,
+console.log("Tecnologias disponíveis no DualDev:");
+tecnologias.forEach(t => {
+  console.log(\`• \${t.nome} (\${t.tipo}) - Criado em \${t.ano}\`);
+});
+`,
     },
   ],
   html: [
     {
-      name: 'Documento HTML',
-      code: `<div class="container">
-  <h1>DualDev Playground</h1>
-  <p>Ambiente seguro e interativo de testes web.</p>
-</div>`,
+      name: 'Estrutura Básica HTML5',
+      code: `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Minha Página</title>
+</head>
+<body>
+  <header>
+    <h1>DualDev Academy</h1>
+    <p>Aprenda programação na prática.</p>
+  </header>
+</body>
+</html>`,
     },
   ],
   css: [
     {
-      name: 'Estilização CSS',
-      code: `.container {
+      name: 'Flexbox e Estilização',
+      code: `/* Estilos Modernos com Flexbox */
+.container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  color: #a855f7;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #ffbe82, #6fb7db);
 }`,
     },
   ],
 };
 
+/**
+ * PlaygroundPage: Ambiente livre em Dark Mode Pastel.
+ */
 export const PlaygroundPage: React.FC = () => {
   const { recordCodeExecution } = useDualDev();
   const [selectedLanguage, setSelectedLanguage] = useState<TrackId>('java');
@@ -139,48 +185,50 @@ export const PlaygroundPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-4 bg-[#0b101b]">
       
-      {/* Playground Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-purple-200/80 dark:border-purple-950/70 pb-4">
+      {/* Cabeçalho do Playground */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Terminal className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#ffbe82] to-[#6fb7db] text-slate-950 shadow-xs">
+              <Terminal className="h-4 w-4" />
+            </div>
             <span>Playground Livre</span>
           </h1>
-          <p className="text-xs text-slate-500 dark:text-purple-300/60 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Escreva e execute códigos livremente sem restrições de lição.
           </p>
         </div>
 
-        {/* Language Tabs & Template Selector */}
+        {/* Seletor de Linguagens e Modelos Rápidos */}
         <div className="flex flex-wrap items-center gap-2">
           {(['java', 'python', 'javascript'] as TrackId[]).map((lang) => (
             <button
               key={lang}
               onClick={() => handleLanguageChange(lang)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                 selectedLanguage === lang
-                  ? 'bg-purple-600 text-white font-bold shadow-md shadow-purple-600/25'
-                  : 'bg-white dark:bg-[#140e24] border border-purple-200 dark:border-purple-900/50 text-slate-600 dark:text-purple-300 hover:border-purple-400'
+                  ? 'bg-[#6fb7db] text-slate-950 font-bold shadow-xs'
+                  : 'bg-[#141f30] text-slate-300 hover:text-white border border-slate-700/80'
               }`}
             >
-              <LanguageIcon trackId={lang} className="w-4 h-4" />
+              <LanguageIcon trackId={lang} className="w-3.5 h-3.5" />
               <span>{lang.toUpperCase()}</span>
             </button>
           ))}
 
-          {/* Preset Selector */}
+          {/* Menu Dropdown de Modelos Pré-prontos */}
           <select
             onChange={(e) => {
               const idx = parseInt(e.target.value, 10);
               setCode(PRESETS[selectedLanguage][idx].code);
               setExecutionResult(null);
             }}
-            className="bg-white dark:bg-[#140e24] border border-purple-200 dark:border-purple-900/50 text-slate-800 dark:text-purple-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
+            className="bg-[#141f30] border border-slate-700 text-slate-200 text-xs rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#ffbe82]/40 font-medium"
           >
             {PRESETS[selectedLanguage].map((preset, idx) => (
-              <option key={idx} value={idx}>
+              <option key={idx} value={idx} className="bg-[#0e1626]">
                 Modelo: {preset.name}
               </option>
             ))}
@@ -188,9 +236,9 @@ export const PlaygroundPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Editor & Console Split */}
+      {/* Grid de Divisão: Editor (esquerda) e Terminal de Saída (direita) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[580px]">
-        {/* Editor */}
+        {/* Editor de Código */}
         <div className="h-[580px]">
           <CodeEditor
             code={code}
@@ -202,7 +250,7 @@ export const PlaygroundPage: React.FC = () => {
           />
         </div>
 
-        {/* Output */}
+        {/* Saída de Console */}
         <div className="h-[580px]">
           <ConsoleOutput
             result={executionResult}

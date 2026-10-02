@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
+// Ícones do Lucide para ações do editor (Executar, Testar, Copiar, etc.)
 import { 
   Play, 
   CheckCircle2, 
@@ -11,20 +12,33 @@ import {
   Sparkles,
   X
 } from 'lucide-react';
+// Tipos TypeScript para identificar a linguagem ativa ('java', 'python', etc.)
 import { TrackId } from '../types';
+// Catálogo de snippets (atalhos como sout, main, def, clg) por linguagem
 import { getSnippetsByTrack, CodeSnippet } from '../data/snippets';
 
+/**
+ * Interface que define as propriedades recebidas pelo CodeEditor
+ */
 interface CodeEditorProps {
-  code: string;
-  onChange: (value: string) => void;
-  onRun: () => void;
-  onTest?: () => void;
-  onReset: () => void;
-  trackId: TrackId;
-  isRunning: boolean;
-  isTesting?: boolean;
+  code: string;                      // Texto de código exibido no editor
+  onChange: (value: string) => void; // Callback chamado quando o usuário digita
+  onRun: () => void;                 // Callback para executar o código
+  onTest?: () => void;               // Callback opcional para verificar o desafio
+  onReset: () => void;               // Callback para restaurar o código inicial
+  trackId: TrackId;                  // Identificador da linguagem ativa (java, python, etc.)
+  isRunning: boolean;                // Flag indicando se a execução está em andamento
+  isTesting?: boolean;               // Flag indicando se o teste do desafio está rodando
 }
 
+/**
+ * CodeEditor: Editor de código em Dark Mode com detalhes pastéis e autocompletar.
+ * Cores Pastéis:
+ * - Botão Executar em Pêssego Pastel (#ffbe82)
+ * - Botão Verificar em Menta Pastel (#34d399)
+ * - Aba do arquivo com realce em Celeste Pastel (#9FD6F2)
+ * - Numeração de linhas discreta e tela de digitação de alto contraste (#09101a)
+ */
 export const CodeEditor: React.FC<CodeEditorProps> = ({
   code,
   onChange,
@@ -35,18 +49,27 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   isRunning,
   isTesting = false,
 }) => {
+  // Referência direta para o elemento <textarea> para manipulação precisa do cursor e foco
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Feedback visual de código copiado para a área de transferência
   const [copied, setCopied] = useState(false);
+  
+  // Controla se o catálogo completo de snippets em formato modal está aberto
   const [showSnippetsMenu, setShowSnippetsMenu] = useState(false);
   
-  // Autocomplete state (VS Code IntelliSense popup)
+  // --- Estados do Autocompletar / IntelliSense ---
   const [suggestions, setSuggestions] = useState<CodeSnippet[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [wordPrefix, setWordPrefix] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  // Busca todos os snippets disponíveis para a linguagem atual
   const availableSnippets = getSnippetsByTrack(trackId);
 
+  /**
+   * getFileName: Retorna o nome do arquivo virtual de acordo com a trilha ativa
+   */
   const getFileName = (track: TrackId) => {
     switch (track) {
       case 'java':
@@ -67,7 +90,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   const lines = code.split('\n');
   const lineCount = Math.max(lines.length, 12);
 
-  // Check prefix when cursor moves or text changes
+  /**
+   * updateSuggestions: Analisa a palavra digitada antes do cursor
+   */
   const updateSuggestions = (text: string, cursorPos: number) => {
     const textBeforeCursor = text.substring(0, cursorPos);
     const match = textBeforeCursor.match(/([a-zA-Z0-9_]+)$/);
@@ -92,6 +117,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     setWordPrefix('');
   };
 
+  /**
+   * insertSnippet: Substitui o prefixo digitado pelo bloco completo do snippet
+   */
   const insertSnippet = (snippet: CodeSnippet) => {
     const textarea = textareaRef.current;
     if (!textarea) return;
@@ -114,15 +142,16 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     });
   };
 
+  /**
+   * handleKeyDown: Captura atalhos de teclado (Ctrl+Enter para rodar, Tab para autocompletar)
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Run Code: Ctrl + Enter / Cmd + Enter
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       onRun();
       return;
     }
 
-    // Force Open IntelliSense: Ctrl + Space
     if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
       e.preventDefault();
       setSuggestions(availableSnippets);
@@ -132,7 +161,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       return;
     }
 
-    // When suggestions popover is active
     if (showSuggestions && suggestions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
@@ -156,7 +184,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
       }
     }
 
-    // Standard Tab: Insert 4 spaces if suggestions aren't open
     if (e.key === 'Tab') {
       e.preventDefault();
       const textarea = textareaRef.current;
@@ -194,88 +221,91 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
   };
 
   return (
-    <div className="relative flex flex-col h-full rounded-xl border border-purple-200/80 dark:border-purple-950/70 bg-white dark:bg-[#120c22] shadow-xl overflow-hidden transition-colors">
+    <div className="aero-card relative flex flex-col h-full overflow-hidden bg-[#09101a]">
       
-      {/* Editor Top Bar */}
-      <div className="flex items-center justify-between border-b border-purple-200/80 dark:border-purple-950/70 bg-slate-50 dark:bg-[#0f0a1c] px-4 py-2.5 transition-colors">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-purple-50 dark:bg-[#1a112e] border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 text-xs font-mono font-medium">
-            <FileCode className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+      {/* Barra de Título Superior em Dark Pastel */}
+      <div className="flex items-center justify-between min-h-[44px] h-11 border-b border-slate-800/80 bg-[#0e1626] px-3 sm:px-4">
+        
+        {/* Lado Esquerdo: Aba do Arquivo e Botão de Snippets */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="h-2 w-2 rounded-full bg-[#6fb7db]" />
+
+          {/* Aba do arquivo ativo */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#141f30] border border-slate-700/80 text-[#9FD6F2] text-xs font-mono font-medium shadow-xs">
+            <FileCode className="h-3.5 w-3.5 text-[#6fb7db]" />
             <span>{getFileName(trackId)}</span>
           </div>
 
-          {/* Snippets / Autocomplete quick trigger button */}
+          {/* Botão de snippets */}
           <button
             onClick={() => setShowSnippetsMenu(!showSnippetsMenu)}
             title="Abrir catálogo de snippets (Atalhos com Tab)"
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-mono font-semibold bg-purple-100/70 dark:bg-purple-950/70 hover:bg-purple-200/70 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800/60 transition-all"
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-slate-300 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
           >
-            <Zap className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
-            <span>Snippets (Tab)</span>
+            <Zap className="h-3 w-3 text-[#ffbe82]" />
+            <span>Snippets</span>
           </button>
-
-          <span className="text-[11px] text-slate-500 dark:text-purple-400/60 font-mono hidden md:inline">
-            Ctrl + Enter para rodar • Tab para autocompletar
-          </span>
         </div>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Lado Direito: Ações de Copiar, Restaurar, Verificar e Executar */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+          {/* Botão Copiar */}
           <button
             onClick={handleCopy}
             title="Copiar código"
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-200 hover:bg-purple-100/60 dark:hover:bg-purple-950/50 rounded transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-mono text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
           >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
-            <span className="hidden sm:inline">{copied ? 'Copiado!' : 'Copiar'}</span>
+            {copied ? <Check className="h-3.5 w-3.5 text-[#86efac]" /> : <Copy className="h-3.5 w-3.5" />}
+            <span className="hidden md:inline">{copied ? 'Copiado!' : 'Copiar'}</span>
           </button>
 
+          {/* Botão Restaurar */}
           <button
             onClick={onReset}
             title="Restaurar código inicial da lição"
-            className="flex items-center gap-1 px-2.5 py-1 text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-100/60 dark:hover:bg-purple-950/50 rounded transition-colors"
+            className="flex items-center gap-1 px-2 py-1 text-xs font-mono text-slate-400 hover:text-white hover:bg-slate-800 rounded-md transition-colors"
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Restaurar</span>
+            <span className="hidden md:inline">Restaurar</span>
           </button>
 
-          {/* Test / Verify Challenge button */}
+          {/* Botão Verificar Desafio (Menta Pastel) */}
           {onTest && (
             <button
               onClick={onTest}
               disabled={isRunning || isTesting}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-500/10 hover:bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 transition-all disabled:opacity-50"
+              className="aero-btn-success px-3 py-1.5 text-xs shadow-xs disabled:opacity-50"
             >
               {isTesting ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
               ) : (
-                <CheckCircle2 className="h-3.5 w-3.5" />
+                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
               )}
-              <span>Verificar Desafio</span>
+              <span>Verificar</span>
             </button>
           )}
 
-          {/* Run Code Button */}
+          {/* Botão Executar Código (Pêssego Pastel) */}
           <button
             onClick={onRun}
             disabled={isRunning || isTesting}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-600/25 transition-all active:scale-95 disabled:opacity-50"
+            className="aero-btn-primary px-3.5 py-1.5 text-xs shadow-xs disabled:opacity-50"
           >
             {isRunning ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 text-slate-950" />
             ) : (
-              <Play className="h-3.5 w-3.5 fill-white" />
+              <Play className="h-3.5 w-3.5 mr-1.5 fill-slate-950" />
             )}
             <span>Executar</span>
           </button>
         </div>
       </div>
 
-      {/* Editor Core Body with Line Numbers & IntelliSense Popover */}
-      <div className="relative flex flex-1 overflow-hidden font-mono text-sm leading-relaxed bg-white dark:bg-[#0e091a]">
+      {/* Corpo Central do Editor: Coluna de Números + Área Textarea de Digitação */}
+      <div className="relative flex flex-1 overflow-hidden font-mono text-sm leading-relaxed bg-[#09101a]">
         
-        {/* Line Numbers column */}
-        <div className="select-none py-3 px-3 text-right text-xs text-purple-400/60 dark:text-purple-600/60 bg-purple-50/40 dark:bg-[#0a0614] border-r border-purple-100 dark:border-purple-950/70 font-mono min-w-[3rem]">
+        {/* Coluna com Numeração de Linhas */}
+        <div className="select-none py-3 px-3 text-right text-xs text-slate-500 bg-[#070c14] border-r border-slate-800/80 font-mono min-w-[2.75rem]">
           {Array.from({ length: lineCount }).map((_, i) => (
             <div key={i} className="leading-6">
               {i + 1}
@@ -283,7 +313,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           ))}
         </div>
 
-        {/* Code Textarea */}
+        {/* Textarea para Escrita de Código */}
         <textarea
           ref={textareaRef}
           value={code}
@@ -295,20 +325,20 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           autoCapitalize="off"
           autoComplete="off"
           autoCorrect="off"
-          placeholder="// Digite seu código aqui... Use atalhos como 'sout', 'main', 'def', 'clg' e aperte Tab!"
-          className="flex-1 w-full h-full resize-none bg-transparent p-3 text-slate-800 dark:text-purple-100 outline-none font-mono text-sm leading-6 selection:bg-purple-500/30 focus:ring-0 border-0 whitespace-pre overflow-x-auto"
+          placeholder="// Digite seu código aqui..."
+          className="flex-1 w-full h-full resize-none bg-transparent p-3 text-slate-100 outline-none font-mono text-sm leading-6 selection:bg-[#ffbe82]/30 focus:ring-0 border-0 whitespace-pre overflow-auto"
           style={{ tabSize: 4 }}
         />
 
-        {/* Floating VS Code IntelliSense Snippet Popover */}
+        {/* Menu Flutuante de Sugestões IntelliSense Estilo VS Code */}
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute left-16 bottom-10 z-30 w-80 max-w-[90%] rounded-xl border border-purple-300 dark:border-purple-700 bg-white dark:bg-[#180f2d] shadow-2xl p-1.5 transition-all animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-purple-100 dark:border-purple-900/60 text-[10px] font-mono text-purple-600 dark:text-purple-300 font-semibold">
-              <span className="flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-purple-500" />
-                Sugestões IntelliSense
+          <div className="aero-card absolute left-14 bottom-8 z-30 w-80 max-w-[90%] p-1.5 shadow-xl border border-slate-700 bg-[#0e1626]/95 backdrop-blur-md">
+            <div className="flex items-center justify-between px-2 py-1 mb-1 border-b border-slate-800 text-[10px] font-mono text-slate-400 font-semibold">
+              <span className="flex items-center gap-1 text-[#ffbe82]">
+                <Sparkles className="h-3 w-3 text-[#ffbe82]" />
+                Sugestões
               </span>
-              <span className="text-slate-400 dark:text-purple-400/50">Tab ou Enter</span>
+              <span>Tab / Enter</span>
             </div>
 
             <div className="max-h-48 overflow-y-auto space-y-0.5">
@@ -321,104 +351,92 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
                       e.preventDefault();
                       insertSnippet(snippet);
                     }}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer text-xs font-mono transition-colors ${
+                    className={`flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer text-xs font-mono transition-colors ${
                       isSelected
-                        ? 'bg-purple-600 text-white font-bold shadow-sm'
-                        : 'text-slate-700 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-950/60'
+                        ? 'bg-[#ffbe82] text-slate-950 font-bold shadow-xs'
+                        : 'text-slate-300 hover:bg-slate-800'
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] ${isSelected ? 'bg-purple-700 text-white' : 'bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300'}`}>
+                      <span className={`px-1.5 py-0.2 rounded text-[10px] ${isSelected ? 'bg-black/20 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300'}`}>
                         {snippet.prefix}
                       </span>
                       <span className="truncate">{snippet.description}</span>
                     </div>
-                    <span className="text-[10px] opacity-75 font-sans ml-2">Tab</span>
+                    <span className="text-[10px] opacity-70 font-sans ml-2">Tab</span>
                   </div>
                 );
               })}
-            </div>
-            
-            <div className="px-2 pt-1.5 border-t border-purple-100 dark:border-purple-900/60 text-[10px] text-slate-400 dark:text-purple-400/60 flex items-center justify-between">
-              <span>↑/↓ navegar</span>
-              <span>Esc para fechar</span>
             </div>
           </div>
         )}
 
       </div>
 
-      {/* Snippets Palette Modal / Flyout when clicking "Snippets (Tab)" button */}
+      {/* Modal Completo com o Catálogo de Snippets da Linguagem */}
       {showSnippetsMenu && (
         <div className="absolute inset-0 z-40 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl border border-purple-300 dark:border-purple-800 bg-white dark:bg-[#150d28] shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-purple-100 dark:border-purple-900/60 pb-3">
+          <div className="aero-card w-full max-w-md p-5 space-y-4 shadow-2xl bg-[#0e1626] border border-slate-700">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-300 flex items-center justify-center">
+                <div className="h-8 w-8 rounded-lg bg-[#ffbe82]/20 text-[#ffbe82] flex items-center justify-center">
                   <Zap className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                    Snippets & Autocompletar ({trackId.toUpperCase()})
+                  <h3 className="text-sm font-semibold text-white">
+                    Snippets ({trackId.toUpperCase()})
                   </h3>
-                  <p className="text-[11px] text-slate-500 dark:text-purple-300/70">
-                    Digite o prefixo e aperte <kbd className="px-1 py-0.5 rounded bg-purple-100 dark:bg-purple-950 border border-purple-300 dark:border-purple-800 font-mono font-bold text-purple-700 dark:text-purple-300">Tab</kbd> no editor
+                  <p className="text-[11px] text-slate-400">
+                    Digite o prefixo e aperte <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[10px] text-[#ffbe82]">Tab</kbd>
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setShowSnippetsMenu(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-purple-950/60"
+                className="p-1 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+            <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
               {availableSnippets.map((snippet) => (
                 <div
                   key={snippet.id}
                   onClick={() => insertSnippet(snippet)}
-                  className="group flex items-center justify-between p-2.5 rounded-xl border border-purple-100 dark:border-purple-950/80 bg-purple-50/50 dark:bg-[#0d071a] hover:border-purple-400 dark:hover:border-purple-600 hover:bg-purple-100/60 dark:hover:bg-[#1a1033] cursor-pointer transition-all"
+                  className="group flex items-center justify-between p-2.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:border-[#6fb7db] hover:bg-slate-800/80 cursor-pointer shadow-xs transition-all"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="px-1.5 py-0.5 rounded bg-purple-600 text-white font-mono font-bold text-xs shadow-xs">
+                      <span className="px-1.5 py-0.5 rounded bg-[#ffbe82]/20 text-[#ffbe82] font-mono font-semibold text-xs">
                         {snippet.prefix}
                       </span>
-                      <span className="text-xs font-semibold text-slate-800 dark:text-purple-200">
+                      <span className="text-xs font-medium text-slate-200">
                         {snippet.label}
                       </span>
                     </div>
-                    <div className="text-[11px] font-mono text-slate-500 dark:text-purple-400/70">
+                    <div className="text-[11px] font-mono text-slate-400">
                       {snippet.description}
                     </div>
                   </div>
-                  <span className="text-[11px] font-medium text-purple-600 dark:text-purple-400 group-hover:underline">
+                  <span className="text-[11px] font-medium text-[#9FD6F2] group-hover:underline">
                     Inserir →
                   </span>
                 </div>
               ))}
             </div>
-
-            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/60 text-center text-xs text-slate-500 dark:text-purple-300/60">
-              Dica: Você também pode apertar <kbd className="px-1 py-0.5 rounded bg-slate-100 dark:bg-purple-950 font-mono text-purple-600 dark:text-purple-400 font-bold">Ctrl + Espaço</kbd> para abrir sugestões.
-            </div>
           </div>
         </div>
       )}
 
-      {/* Bottom Bar Info */}
-      <div className="flex items-center justify-between border-t border-purple-200/80 dark:border-purple-950/70 bg-slate-50 dark:bg-[#0a0614] px-4 py-1.5 text-[11px] text-slate-500 dark:text-purple-300/50 font-mono transition-colors">
+      {/* Barra de Rodapé */}
+      <div className="flex items-center justify-between border-t border-slate-800/80 bg-[#070c14] px-4 py-1.5 text-[11px] text-slate-400 font-mono">
         <div className="flex items-center gap-3">
           <span>{lines.length} linhas</span>
           <span>{code.length} caracteres</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-1">
-            <Zap className="h-3 w-3" />
-            Tab: Autocompletar
-          </span>
+          <span className="text-[#9FD6F2]">Tab: Autocompletar</span>
           <span>•</span>
           <span>UTF-8 • {trackId.toUpperCase()}</span>
         </div>
